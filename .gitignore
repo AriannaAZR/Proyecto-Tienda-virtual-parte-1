@@ -1,0 +1,21 @@
+# Node dependencies
+node_modules/
+BACKEND_TIENDA_NODE_MYSQL/node_modules/
+
+# Environment variables
+.env
+BACKEND_TIENDA_NODE_MYSQL/.env
+
+# IDE / Editor folders
+.vscode/
+.idea/
+*.suo
+*.ntvsca
+*.njsproj
+*.sln
+*.swp
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
