@@ -315,62 +315,8 @@
     <script src="js/sb-admin-2.min.js"></script>
 
     <!-- Los estudiantes deben agregar aquí el JavaScript -->
-    <script>
-        const d = document;
-        const formulario = d.querySelector("#formulario-usuario");
-        const rolInput = d.querySelector("#rol");
-        const usuarioInput = d.querySelector("#usuario");
-        const contrasenaInput = d.querySelector("#contrasena");
-        const confirmarContrasenaInput = d.querySelector("#confirmar_contrasena");
-
-        formulario.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            // Validar que el rol no sea el por defecto
-            if (rolInput.value === "Seleccionar Rol" || !rolInput.value) {
-                alert("Por favor, selecciona un rol válido.");
-                return;
-            }
-
-            // Validar que las contraseñas coincidan
-            if (contrasenaInput.value !== confirmarContrasenaInput.value) {
-                alert("Las contraseñas no coinciden. Por favor, verifícalas.");
-                return;
-            }
-
-            const data = {
-                rol: rolInput.value,
-                usuario: usuarioInput.value,
-                contrasena: contrasenaInput.value
-            };
-
-            const url = "http://localhost:3000/api/usuarios";
-
-            try {
-                const respuesta = await fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await respuesta.json();
-
-                if (respuesta.status === 201) {
-                    alert("¡Usuario creado con éxito!");
-                    // Redirigir al listado de usuarios
-                    window.location.href = "listado-usuarios.html";
-                } else {
-                    alert("Error al crear usuario: " + (result.message || "Inténtalo de nuevo."));
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Ocurrió un error al conectar con el servidor.");
-            }
-        });
-    </script>
-
+    <!-- Archivo JS para el CRUD de usuarios -->
+    <script src="js/usuarios.js"></script>
 </body>
 
 </html>

@@ -245,6 +245,19 @@
                                 <!-- Productos carrito -->
                                 <div class="form-outline mb-4">
                                     <h5>Productos del Pedido</h5>
+                                    <div class="form-row mb-3">
+                                        <div class="col-6">
+                                            <select id="select-producto-pedido" class="form-control">
+                                                <option value="">Seleccionar Producto</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <input type="number" id="cantidad-producto-pedido" class="form-control" value="1" min="1" placeholder="Cant.">
+                                        </div>
+                                        <div class="col-3">
+                                            <button type="button" id="btn-agregar-producto-pedido" class="btn btn-secondary btn-block">Agregar</button>
+                                        </div>
+                                    </div>
                                     <table class="table" id="tabla-carrito">
                                         <thead class="table-light">
                                             <tr>
@@ -255,8 +268,8 @@
                                                 <th>Acción</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <!-- Los estudiantes agregan productos aquí dinámicamente -->
+                                        <tbody id="body-carrito">
+                                            <!-- Productos agregados dinámicamente -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -343,16 +356,8 @@
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
 
-    <!-- Los estudiantes deben agregar aquí el JavaScript -->
-    <script>
-        // TODO: Implementar:
-        // 1. GET /api/clientes para llenar select de clientes
-        // 2. GET /api/productos para que puedan seleccionar productos
-        // 3. Agregar productos al carrito dinámicamente
-        // 4. Calcular total (productos + descuento + aumento)
-        // 5. POST a /api/pedidos con los datos del formulario
-    </script>
-
+    <!-- Archivo JS para el CRUD de pedidos -->
+    <script src="js/pedidos.js"></script>
 </body>
 
 </html>
