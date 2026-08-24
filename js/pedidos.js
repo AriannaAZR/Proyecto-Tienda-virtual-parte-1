@@ -11,11 +11,15 @@ let bodyCarrito = document.getElementById("body-carrito");
 let inputDescuento = document.getElementById("descuento");
 let inputAumento = document.getElementById("aumento");
 let totalDisplay = document.getElementById("total-pedido");
+let buscadorPedido = document.getElementById("buscador-pedido");
 
 // Arreglo almacena los productos agregados al pedido actual
 
 let productosCarrito = [];
 let listaProductosDisponibles = [];
+
+// Último listado de pedidos que trajo el backend, para filtrarlo en el navegador
+let listaPedidosGlobal = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     // Si estamos en el listado de pedidos
@@ -42,6 +46,13 @@ document.addEventListener("DOMContentLoaded", () => {
             crearPedido();
         });
     }
+
+    // Buscador del listado (Proceso 3)
+    if (buscadorPedido) {
+        buscadorPedido.addEventListener("input", () => {
+            filtrarPedidos(buscadorPedido.value);
+        });
+    }
 });
 
 // Obtener listado de pedidos
@@ -52,28 +63,61 @@ async function obtenerPedidos() {
         let respuesta = await fetch(url);
         let pedidos = await respuesta.json();
 
-        tablaPedidos.innerHTML = "";
-
-        pedidos.forEach((ped, i) => {
-            let fila = document.createElement("tr");
-            fila.innerHTML = `
-                <td>${i + 1}</td>
-                <td>${ped.cliente_nombre ? (ped.cliente_nombre + ' ' + (ped.cliente_apellido || '')) : ('Cliente #' + ped.id_cliente)}</td>
-                <td>${ped.cliente_email || 'N/A'}</td>
-                <td>${ped.fecha ? ped.fecha.substring(0, 10) : 'Hoy'}</td>
-                <td>$${ped.total || 0}</td>
-                <td><span class="badge badge-success">${ped.estado || 'Completado'}</span></td>
-                <td>
-                    <button class="btn btn-warning btn-sm">🖊️</button>
-                    <button class="btn btn-danger btn-sm btn-eliminar" onclick="eliminarPedido(${ped.id})">✖️</button>
-                </td>
-            `;
-            tablaPedidos.appendChild(fila);
-        });
+        listaPedidosGlobal = pedidos;
+        renderizarPedidos(pedidos);
 
     } catch (error) {
         console.log("Error al cargar pedidos:", error);
     }
+}
+
+// Pinta las filas de la tabla a partir del arreglo que se le pase
+
+function renderizarPedidos(pedidos) {
+    tablaPedidos.innerHTML = "";
+
+    // Solo el administrador puede ver el botón de eliminar (Proceso 3)
+    let permitirEliminar = esAdministrador();
+
+    pedidos.forEach((ped, i) => {
+        let fila = document.createElement("tr");
+        fila.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${ped.cliente_nombre ? (ped.cliente_nombre + ' ' + (ped.cliente_apellido || '')) : ('Cliente #' + ped.id_cliente)}</td>
+            <td>${ped.cliente_email || 'N/A'}</td>
+            <td>${ped.fecha ? ped.fecha.substring(0, 10) : 'Hoy'}</td>
+            <td>$${ped.total || 0}</td>
+            <td><span class="badge badge-success">${ped.estado || 'Completado'}</span></td>
+            <td>
+                <button class="btn btn-warning btn-sm">🖊️</button>
+                ${permitirEliminar
+                    ? `<button class="btn btn-danger btn-sm btn-eliminar" onclick="eliminarPedido(${ped.id})">✖️</button>`
+                    : ``
+                }
+            </td>
+        `;
+        tablaPedidos.appendChild(fila);
+    });
+}
+
+// Filtra el listado local por cliente, email o estado (Proceso 3 - buscador)
+
+function filtrarPedidos(texto) {
+    let filtro = texto.trim().toLowerCase();
+
+    if (!filtro) {
+        renderizarPedidos(listaPedidosGlobal);
+        return;
+    }
+
+    let resultado = listaPedidosGlobal.filter(ped => {
+        let nombreCompleto = ((ped.cliente_nombre || '') + ' ' + (ped.cliente_apellido || '')).toLowerCase();
+        let email = (ped.cliente_email || '').toLowerCase();
+        let estado = (ped.estado || '').toLowerCase();
+        return nombreCompleto.includes(filtro) || email.includes(filtro) || estado.includes(filtro);
+    });
+
+    renderizarPedidos(resultado);
 }
 
 // ----------------------------------------------------
@@ -241,18 +285,30 @@ async function crearPedido() {
 // Eliminar Pedido
 
 async function eliminarPedido(id) {
+    // Proceso 3: segunda barrera aunque el botón esté oculto
+    if (!esAdministrador()) {
+        alert("No tienes permisos para eliminar pedidos.");
+        return;
+    }
+
     let confirmar = confirm("¿Deseas eliminar este pedido?");
     if (!confirmar) return;
 
     try {
         let url = `http://localhost:3000/api/pedidos/${id}`;
+        let usuario = obtenerUsuarioLogueado();
         let respuesta = await fetch(url, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: {
+                "x-user-rol": usuario ? usuario.rol : ""
+            }
         });
 
         if (respuesta.ok) {
             alert("Pedido eliminado con éxito.");
             obtenerPedidos(); // Recargar la tabla
+        } else if (respuesta.status === 403) {
+            alert("No tienes permisos para eliminar pedidos.");
         } else {
             alert("No se pudo eliminar el pedido.");
         }

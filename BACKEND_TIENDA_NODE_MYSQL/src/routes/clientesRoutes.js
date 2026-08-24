@@ -1,5 +1,6 @@
 const express = require("express")
 const { getClientes, createCliente, updateCliente, deleteCliente } = require("../controllers/clientesController")
+const { soloAdministrador } = require("../middlewares/restrictVendedor")
 
 const router = express.Router()
 
@@ -13,7 +14,7 @@ router.post("/", createCliente)
 // PUT /api/clientes/:id
 router.put("/:id", updateCliente)
 
-// DELETE /api/clientes/:id
-router.delete("/:id", deleteCliente)
+// DELETE /api/clientes/:id (Proceso 3: solo administrador)
+router.delete("/:id", soloAdministrador, deleteCliente)
 
 module.exports = router
